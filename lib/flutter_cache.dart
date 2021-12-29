@@ -1,8 +1,11 @@
 library flutter_cache;
 
 import 'dart:convert';
+
 import 'package:flutter_cache/Cache.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'Future_requests.dart';
 
 /*
 * This function will return cached data if exist, 
@@ -13,12 +16,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 Future remember(String key, var data, [int? expiredAt]) async {
   if (await load(key) == null) {
     if (data is Function) {
-      data = await data();
+      data = await FutureRequests.get.getFuture(key, data);
+      // data = await data;
     }
-
     return write(key, data, expiredAt);
   }
-
   return load(key);
 }
 
@@ -66,7 +68,8 @@ Future load(String key, [var defaultValue = null, bool list = false]) async {
     cacheContent = prefs.getStringList(keys['content']);
 
   if (cacheType == 'List<Map>')
-    cacheContent = prefs.getStringList(keys['content'])!
+    cacheContent = prefs
+        .getStringList(keys['content'])!
         .map((i) => jsonDecode(i))
         .toList();
 
@@ -93,12 +96,12 @@ void clear() async {
 */
 void destroy(String key) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (prefs.getString(key)!= null){
-  Map keys = jsonDecode(prefs.getString(key)!);
-  // remove all cache trace
-  prefs.remove(key);
-  prefs.remove(keys['content']);
-  prefs.remove(keys['type']);
-  prefs.remove(key + 'ExpiredAt');
+  if (prefs.getString(key) != null) {
+    Map keys = jsonDecode(prefs.getString(key)!);
+    // remove all cache trace
+    prefs.remove(key);
+    prefs.remove(keys['content']);
+    prefs.remove(keys['type']);
+    prefs.remove(key + 'ExpiredAt');
   }
 }
