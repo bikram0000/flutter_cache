@@ -94,11 +94,12 @@ void clear() async {
 *
 * @return void
 */
-void destroy(String key) async {
+Future<void> destroy(String key) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getString(key) != null) {
     Map keys = jsonDecode(prefs.getString(key)!);
     // remove all cache trace
+    await FutureRequests.get.removeFuture(key);
     prefs.remove(key);
     prefs.remove(keys['content']);
     prefs.remove(keys['type']);
